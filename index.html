@@ -405,6 +405,7 @@
         const API_KEY = '8be30c3014e32213e2ad4d6f7aca735d';
         const BASE_URL = 'https://api.themoviedb.org/3';
         const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p';
+        const RESULTS_PER_PAGE = 10;
 
         // 应用状态
         let currentPage = 1;
@@ -470,7 +471,7 @@
             }
 
             searchGrid.innerHTML = '';
-            searchResults.slice(0, 10).forEach(item => {
+            searchResults.slice(0, RESULTS_PER_PAGE).forEach(item => {
                 const card = createCard(item, false);
                 searchGrid.appendChild(card);
             });
@@ -662,7 +663,7 @@
                                 release_date: date,
                                 first_air_date: date,
                                 media_type: mediaType
-                            }).replace(/"/g, '&quot;')})">
+                            }).replace(/"/g, '&quot;')}, event)">
                                 ${isFavorited ? '❤️ 已收藏' : '🤍 收藏'}
                             </button>
                         </div>
@@ -685,7 +686,7 @@
         }
 
         // 切换收藏
-        function toggleFavorite(item) {
+        function toggleFavorite(item, event) {
             const index = favorites.findIndex(f => f.id === item.id);
             
             if (index > -1) {
@@ -699,11 +700,13 @@
             displayFavorites();
             
             // 更新按钮状态
-            const btn = event.target;
-            if (index > -1) {
-                btn.textContent = '🤍 收藏';
-            } else {
-                btn.textContent = '❤️ 已收藏';
+            if (event && event.target) {
+                const btn = event.target;
+                if (index > -1) {
+                    btn.textContent = '🤍 收藏';
+                } else {
+                    btn.textContent = '❤️ 已收藏';
+                }
             }
         }
 
