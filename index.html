@@ -444,6 +444,27 @@
                 const response = await fetch(
                     `${BASE_URL}/search/multi?api_key=${API_KEY}&language=zh-CN&query=${encodeURIComponent(query)}&page=${page}`
                 );
+                
+                // 检查 HTTP 响应状态
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    let errorMessage = '搜索失败，请重试';
+                    
+                    if (response.status === 401) {
+                        errorMessage = 'API 密钥无效或已过期';
+                    } else if (response.status === 429) {
+                        errorMessage = '请求过于频繁，请稍后再试';
+                    } else if (response.status >= 500) {
+                        errorMessage = '服务器错误，请稍后再试';
+                    } else if (errorData.status_message) {
+                        errorMessage = errorData.status_message;
+                    }
+                    
+                    console.error('搜索失败:', response.status, errorData);
+                    searchGrid.innerHTML = `<div class="loading">${errorMessage}</div>`;
+                    return;
+                }
+                
                 const data = await response.json();
 
                 searchResults = data.results.filter(item => 
@@ -454,7 +475,7 @@
                 displaySearchResults();
             } catch (error) {
                 console.error('搜索失败:', error);
-                searchGrid.innerHTML = '<div class="loading">搜索失败，请重试</div>';
+                searchGrid.innerHTML = '<div class="loading">网络错误，请检查网络连接后重试</div>';
             }
         }
 
@@ -597,6 +618,11 @@
                 const response = await fetch(
                     `${BASE_URL}/${mediaType}/${item.id}?api_key=${API_KEY}&language=zh-CN`
                 );
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const detail = await response.json();
 
                 // 获取剧集信息（如果是电视剧）
@@ -609,6 +635,11 @@
                         const seasonResponse = await fetch(
                             `${BASE_URL}/tv/${item.id}/season/${season.season_number}?api_key=${API_KEY}&language=zh-CN`
                         );
+                        
+                        if (!seasonResponse.ok) {
+                            continue; // 跳过加载失败的季
+                        }
+                        
                         const seasonDetail = await seasonResponse.json();
                         
                         seasonsHTML += `
