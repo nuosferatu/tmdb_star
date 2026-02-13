@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>影视库管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            padding: 8px 16px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-favorite {
+            background: #28a745;
+            color: white;
+            margin-top: 20px;
+        }
+
+        .btn-favorite:hover {
+            background: #218838;
+        }
+
+        .btn-back {
+            background: #6c757d;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .btn-back:hover {
+            background: #5a6268;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .grid-large {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .card.draggable {
+            cursor: move;
+        }
+
+        .card.dragging {
+            opacity: 0.5;
+        }
+
+        .card.drag-over {
+            border: 2px dashed #667eea;
+        }
+
+        .card-poster {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            background: #f0f0f0;
+        }
+
+        .card-poster-large {
+            height: 375px;
+        }
+
+        .card-content {
+            padding: 15px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .card-title-large {
+            font-size: 20px;
+        }
+
+        .card-info {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .card-type {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #667eea;
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .page-info {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .detail-view {
+            display: none;
+        }
+
+        .detail-header {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .detail-poster {
+            width: 400px;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .detail-info {
+            flex: 1;
+        }
+
+        .detail-title {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .detail-original-title {
+            font-size: 1.5rem;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .detail-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .detail-meta-item {
+            font-size: 16px;
+            color: #555;
+        }
+
+        .detail-meta-item strong {
+            color: #333;
+        }
+
+        .detail-overview {
+            line-height: 1.6;
+            color: #444;
+            margin-bottom: 20px;
+        }
+
+        .seasons {
+            margin-top: 30px;
+        }
+
+        .season {
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .season-header {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .season-header:hover {
+            color: #667eea;
+        }
+
+        .episodes {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .episodes.show {
+            display: block;
+        }
+
+        .episode {
+            padding: 8px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .detail-header {
+                flex-direction: column;
+            }
+
+            .detail-poster {
+                width: 100%;
+            }
+
+            .grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 15px;
+            }
+
+            .grid-large {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 主视图：首页 + 搜索 -->
+        <div id="mainView">
+            <div class="header">
+                <h1>🎬 我的影视库</h1>
+                <div class="search-bar">
+                    <input type="text" id="searchInput" class="search-input" placeholder="搜索电影或剧集..." />
+                    <button class="btn btn-primary" onclick="searchMovies()">搜索</button>
+                </div>
+                <div class="controls">
+                    <button class="btn btn-secondary" id="manageBtn" onclick="toggleManageMode()">管理收藏</button>
+                </div>
+            </div>
+
+            <!-- 搜索结果 -->
+            <div id="searchResults" class="hidden">
+                <h2>搜索结果</h2>
+                <div id="searchGrid" class="grid"></div>
+                <div id="searchPagination" class="pagination hidden">
+                    <button class="btn btn-secondary" onclick="previousPage()">上一页</button>
+                    <span class="page-info" id="pageInfo">第 1 页</span>
+                    <button class="btn btn-secondary" onclick="nextPage()">下一页</button>
+                </div>
+            </div>
+
+            <!-- 收藏列表 -->
+            <div id="favoritesSection">
+                <h2>我的收藏</h2>
+                <div id="favoritesGrid" class="grid grid-large"></div>
+            </div>
+        </div>
+
+        <!-- 详情视图 -->
+        <div id="detailView" class="detail-view">
+            <button class="btn btn-back" onclick="showMainView()">← 返回</button>
+            <div id="detailContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // TMDB API 配置
+        const API_KEY = '8be30c3014e32213e2ad4d6f7aca735d';
+        const BASE_URL = 'https://api.themoviedb.org/3';
+        const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p';
+        const RESULTS_PER_PAGE = 10;
+
+        // 应用状态
+        let currentPage = 1;
+        let currentQuery = '';
+        let totalPages = 1;
+        let searchResults = [];
+        let favorites = [];
+        let isManageMode = false;
+
+        // 初始化
+        function init() {
+            loadFavorites();
+            displayFavorites();
+            
+            // 搜索框回车事件
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchMovies();
+                }
+            });
+        }
+
+        // 搜索电影/剧集
+        async function searchMovies(page = 1) {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+
+            currentQuery = query;
+            currentPage = page;
+
+            const searchGrid = document.getElementById('searchGrid');
+            searchGrid.innerHTML = '<div class="loading">搜索中...</div>';
+            document.getElementById('searchResults').classList.remove('hidden');
+
+            try {
+                const response = await fetch(
+                    `${BASE_URL}/search/multi?api_key=${API_KEY}&language=zh-CN&query=${encodeURIComponent(query)}&page=${page}`
+                );
+                const data = await response.json();
+
+                searchResults = data.results.filter(item => 
+                    item.media_type === 'movie' || item.media_type === 'tv'
+                );
+                totalPages = data.total_pages;
+
+                displaySearchResults();
+            } catch (error) {
+                console.error('搜索失败:', error);
+                searchGrid.innerHTML = '<div class="loading">搜索失败，请重试</div>';
+            }
+        }
+
+        // 显示搜索结果
+        function displaySearchResults() {
+            const searchGrid = document.getElementById('searchGrid');
+            const pagination = document.getElementById('searchPagination');
+            const pageInfo = document.getElementById('pageInfo');
+
+            if (searchResults.length === 0) {
+                searchGrid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔍</div><p>没有找到相关结果</p></div>';
+                pagination.classList.add('hidden');
+                return;
+            }
+
+            searchGrid.innerHTML = '';
+            searchResults.slice(0, RESULTS_PER_PAGE).forEach(item => {
+                const card = createCard(item, false);
+                searchGrid.appendChild(card);
+            });
+
+            // 显示分页
+            if (totalPages > 1) {
+                pagination.classList.remove('hidden');
+                pageInfo.textContent = `第 ${currentPage} 页 / 共 ${totalPages} 页`;
+            } else {
+                pagination.classList.add('hidden');
+            }
+        }
+
+        // 创建卡片
+        function createCard(item, isLarge = false) {
+            const card = document.createElement('div');
+            card.className = `card ${isLarge ? 'card-large' : ''}`;
+            
+            const posterPath = item.poster_path 
+                ? `${IMAGE_BASE_URL}/w500${item.poster_path}` 
+                : 'https://via.placeholder.com/500x750?text=No+Image';
+            
+            const title = item.title || item.name;
+            const date = item.release_date || item.first_air_date || '未知';
+            const type = item.media_type === 'movie' ? '电影' : '剧集';
+
+            card.innerHTML = `
+                <img src="${posterPath}" alt="${title}" class="card-poster ${isLarge ? 'card-poster-large' : ''}" />
+                <div class="card-content">
+                    <div class="card-title ${isLarge ? 'card-title-large' : ''}">${title}</div>
+                    <div class="card-info">📅 ${date}</div>
+                    <span class="card-type">${type}</span>
+                    ${isManageMode && isLarge ? '<button class="btn btn-danger" onclick="removeFavorite(event, ' + item.id + ')">删除</button>' : ''}
+                </div>
+            `;
+
+            if (!isManageMode || !isLarge) {
+                card.onclick = () => showDetail(item);
+            } else {
+                // 管理模式：启用拖拽
+                card.classList.add('draggable');
+                card.draggable = true;
+                card.dataset.id = item.id;
+                
+                card.ondragstart = handleDragStart;
+                card.ondragover = handleDragOver;
+                card.ondragenter = handleDragEnter;
+                card.ondragleave = handleDragLeave;
+                card.ondrop = handleDrop;
+                card.ondragend = handleDragEnd;
+            }
+
+            return card;
+        }
+
+        // 拖拽处理
+        let draggedElement = null;
+
+        function handleDragStart(e) {
+            draggedElement = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.innerHTML);
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+
+        function handleDragEnter(e) {
+            this.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            this.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+
+            if (draggedElement !== this) {
+                // 重新排序收藏
+                const draggedId = parseInt(draggedElement.dataset.id);
+                const targetId = parseInt(this.dataset.id);
+                
+                const draggedIndex = favorites.findIndex(f => f.id === draggedId);
+                const targetIndex = favorites.findIndex(f => f.id === targetId);
+                
+                const [removed] = favorites.splice(draggedIndex, 1);
+                favorites.splice(targetIndex, 0, removed);
+                
+                saveFavorites();
+                displayFavorites();
+            }
+
+            return false;
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            document.querySelectorAll('.card').forEach(card => {
+                card.classList.remove('drag-over');
+            });
+        }
+
+        // 显示详情
+        async function showDetail(item) {
+            document.getElementById('mainView').style.display = 'none';
+            document.getElementById('detailView').style.display = 'block';
+            
+            const detailContent = document.getElementById('detailContent');
+            detailContent.innerHTML = '<div class="loading">加载中...</div>';
+
+            try {
+                // 获取详细信息
+                const mediaType = item.media_type;
+                const response = await fetch(
+                    `${BASE_URL}/${mediaType}/${item.id}?api_key=${API_KEY}&language=zh-CN`
+                );
+                const detail = await response.json();
+
+                // 获取剧集信息（如果是电视剧）
+                let seasonsHTML = '';
+                if (mediaType === 'tv' && detail.seasons) {
+                    seasonsHTML = '<div class="seasons"><h3>剧集信息</h3>';
+                    for (const season of detail.seasons) {
+                        if (season.season_number === 0) continue; // 跳过特别篇
+                        
+                        const seasonResponse = await fetch(
+                            `${BASE_URL}/tv/${item.id}/season/${season.season_number}?api_key=${API_KEY}&language=zh-CN`
+                        );
+                        const seasonDetail = await seasonResponse.json();
+                        
+                        seasonsHTML += `
+                            <div class="season">
+                                <div class="season-header" onclick="toggleSeason(this)">
+                                    ▶ 第 ${season.season_number} 季 (${season.episode_count} 集)
+                                </div>
+                                <div class="episodes">
+                                    ${seasonDetail.episodes.map(ep => 
+                                        `<div class="episode">第 ${ep.episode_number} 集: ${ep.name || '未知'}</div>`
+                                    ).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }
+                    seasonsHTML += '</div>';
+                }
+
+                const posterPath = detail.poster_path 
+                    ? `${IMAGE_BASE_URL}/w500${detail.poster_path}` 
+                    : 'https://via.placeholder.com/500x750?text=No+Image';
+                
+                const title = detail.title || detail.name;
+                const originalTitle = detail.original_title || detail.original_name;
+                const date = detail.release_date || detail.first_air_date || '未知';
+                const type = mediaType === 'movie' ? '电影' : '剧集';
+                const genres = detail.genres ? detail.genres.map(g => g.name).join(', ') : '未知';
+
+                const isFavorited = favorites.some(f => f.id === item.id);
+
+                detailContent.innerHTML = `
+                    <div class="detail-header">
+                        <img src="${posterPath}" alt="${title}" class="detail-poster" />
+                        <div class="detail-info">
+                            <h2 class="detail-title">${title}</h2>
+                            <div class="detail-original-title">${originalTitle}</div>
+                            <div class="detail-meta">
+                                <div class="detail-meta-item"><strong>发行时间:</strong> ${date}</div>
+                                <div class="detail-meta-item"><strong>类型:</strong> ${type}</div>
+                                <div class="detail-meta-item"><strong>分类:</strong> ${genres}</div>
+                                ${detail.vote_average ? `<div class="detail-meta-item"><strong>评分:</strong> ${detail.vote_average.toFixed(1)}/10</div>` : ''}
+                            </div>
+                            <div class="detail-overview">
+                                <h3>简介</h3>
+                                <p>${detail.overview || '暂无简介'}</p>
+                            </div>
+                            <button class="btn btn-favorite" onclick="toggleFavorite(${JSON.stringify({
+                                id: item.id,
+                                title: title,
+                                name: title,
+                                poster_path: detail.poster_path,
+                                release_date: date,
+                                first_air_date: date,
+                                media_type: mediaType
+                            }).replace(/"/g, '&quot;')}, event)">
+                                ${isFavorited ? '❤️ 已收藏' : '🤍 收藏'}
+                            </button>
+                        </div>
+                    </div>
+                    ${seasonsHTML}
+                `;
+            } catch (error) {
+                console.error('加载详情失败:', error);
+                detailContent.innerHTML = '<div class="loading">加载失败，请重试</div>';
+            }
+        }
+
+        // 切换季的显示
+        function toggleSeason(header) {
+            const episodes = header.nextElementSibling;
+            episodes.classList.toggle('show');
+            header.textContent = episodes.classList.contains('show') 
+                ? header.textContent.replace('▶', '▼')
+                : header.textContent.replace('▼', '▶');
+        }
+
+        // 切换收藏
+        function toggleFavorite(item, event) {
+            const index = favorites.findIndex(f => f.id === item.id);
+            
+            if (index > -1) {
+                favorites.splice(index, 1);
+            } else {
+                // 新收藏添加到最前面
+                favorites.unshift(item);
+            }
+            
+            saveFavorites();
+            displayFavorites();
+            
+            // 更新按钮状态
+            if (event && event.target) {
+                const btn = event.target;
+                if (index > -1) {
+                    btn.textContent = '🤍 收藏';
+                } else {
+                    btn.textContent = '❤️ 已收藏';
+                }
+            }
+        }
+
+        // 删除收藏
+        function removeFavorite(event, id) {
+            event.stopPropagation();
+            const index = favorites.findIndex(f => f.id === id);
+            if (index > -1) {
+                favorites.splice(index, 1);
+                saveFavorites();
+                displayFavorites();
+            }
+        }
+
+        // 显示收藏
+        function displayFavorites() {
+            const favoritesGrid = document.getElementById('favoritesGrid');
+            
+            if (favorites.length === 0) {
+                favoritesGrid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📚</div><p>还没有收藏任何影视作品</p></div>';
+                return;
+            }
+            
+            favoritesGrid.innerHTML = '';
+            favorites.forEach(item => {
+                const card = createCard(item, true);
+                favoritesGrid.appendChild(card);
+            });
+        }
+
+        // 切换管理模式
+        function toggleManageMode() {
+            isManageMode = !isManageMode;
+            const btn = document.getElementById('manageBtn');
+            btn.textContent = isManageMode ? '完成管理' : '管理收藏';
+            btn.className = isManageMode ? 'btn btn-primary' : 'btn btn-secondary';
+            displayFavorites();
+        }
+
+        // 返回主视图
+        function showMainView() {
+            document.getElementById('mainView').style.display = 'block';
+            document.getElementById('detailView').style.display = 'none';
+        }
+
+        // 分页
+        function previousPage() {
+            if (currentPage > 1) {
+                searchMovies(currentPage - 1);
+            }
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages) {
+                searchMovies(currentPage + 1);
+            }
+        }
+
+        // 保存收藏到 sessionStorage
+        function saveFavorites() {
+            sessionStorage.setItem('favorites', JSON.stringify(favorites));
+        }
+
+        // 从 sessionStorage 加载收藏
+        function loadFavorites() {
+            const saved = sessionStorage.getItem('favorites');
+            if (saved) {
+                favorites = JSON.parse(saved);
+            }
+        }
+
+        // 页面加载时初始化
+        window.onload = init;
+    </script>
+</body>
+</html>
